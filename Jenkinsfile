@@ -1,10 +1,11 @@
 pipeline{
-    agent{
-        docker{
-                image 'node:18-alpine'
-                reuseNode true
-            }
-        }
+    agent any
+    // agent{
+    //     docker{
+    //             image 'node:18-alpine'
+    //             reuseNode true
+    //         }
+    //     }
 
     stages{
         // stage('Build'){
@@ -20,6 +21,12 @@ pipeline{
         //     }
         // }
         stage('Test'){
+            agent{
+                docker{
+                        image 'node:18-alpine'
+                        reuseNode true
+                    }
+                }
             steps{
                 sh '''
                     if [ -f build/index.html ]; then  # space after [ is important
@@ -28,6 +35,21 @@ pipeline{
                         echo "file does not exist"
                     fi
                     npm test
+                '''
+            }
+        }
+        stage('E2E'){
+            agent{
+                docker{
+                        image 'mcr.microsoft.com/playwright:v1.58.2-noble'
+                        reuseNode true
+                    }
+                }
+            steps{
+                sh '''
+                    npm install -g serve
+                    serve -s build 
+                    npx playright test
                 '''
             }
         }
