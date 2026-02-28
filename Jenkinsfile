@@ -19,5 +19,19 @@ pipeline{
                 '''
             }
         }
+        stage('Test'){
+            steps{
+                sh '''
+                    if [ -f build/index.html ]; then  # space after [ is important
+                        echo "file exists"
+                    else
+                        echo "file does not exist"
+                    fi
+                    
+                    npm ci
+                    npm test
+                '''
+            }
+        }
     }
 }
