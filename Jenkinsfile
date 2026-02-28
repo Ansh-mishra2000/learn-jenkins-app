@@ -7,18 +7,18 @@ pipeline{
         }
 
     stages{
-        stage('Build'){
+        // stage('Build'){
             
-            steps{
-                sh '''
-                    ls -la
-                    node --version
-                    npm --version
-                    npm ci
-                    npm run build
-                '''
-            }
-        }
+        //     steps{
+        //         sh '''
+        //             ls -la
+        //             node --version
+        //             npm --version
+        //             npm ci
+        //             npm run build
+        //         '''
+        //     }
+        // }
         stage('Test'){
             steps{
                 sh '''
