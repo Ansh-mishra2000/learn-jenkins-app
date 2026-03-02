@@ -23,6 +23,7 @@ pipeline {
         // }
 
         stage('Test') {
+
             parallel {
 
                 stage('Unit Test') {
@@ -32,6 +33,7 @@ pipeline {
                             reuseNode true
                         }
                     }
+
                     steps {
                         sh '''
                             if [ -f build/index.html ]; then
@@ -51,6 +53,7 @@ pipeline {
                             reuseNode true
                         }
                     }
+
                     steps {
                         sh '''
                             npm install serve
@@ -63,10 +66,12 @@ pipeline {
 
             }
         }
+    }
 
     post {
         always {
             junit 'jest-results/junit.xml'
+
             publishHTML([
                 allowMissing: false,
                 alwaysLinkToLastBuild: false,
@@ -81,5 +86,3 @@ pipeline {
         }
     }
 }
-}
-
