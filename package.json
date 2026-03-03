@@ -47,7 +47,6 @@
     "uniqueOutputName": "false",
     "classNameTemplate": "{classname}-{title}",
     "titleTemplate": "{classname}-{title}",
-    "ancestorSeparator": " › ",
     "usePathForSuiteName": "true"
   }
 }
