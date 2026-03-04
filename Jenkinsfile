@@ -4,6 +4,7 @@ pipeline {
 	environment {
 		NETLIFY_SITE_ID= 'beb46202-fbdf-464e-8638-07f564e09a36'	
 		NETLIFY_AUTH_TOKEN= credentials('netlify-token')
+        
 	}
 
     // agent {
@@ -15,23 +16,23 @@ pipeline {
 
     stages {
 
-        stage('Build') {
-			agent{
-				docker {
-					image 'node:18-alpine'
-					reuseNode true
-				}
-			}
-            steps {
-                sh '''
-                    ls -la
-                    node --version
-                    npm --version
-                    npm ci
-                    npm run build
-                '''
+    stage('Build') {
+        agent{
+            docker {
+                image 'node:18-alpine'
+                reuseNode true
             }
         }
+        steps {
+            sh '''
+                ls -la
+                node --version
+                npm --version
+                npm ci
+                npm run build
+            '''
+        }
+    }
 
         stage('Test') {
 
@@ -88,7 +89,7 @@ pipeline {
 									keepAll: false,
 									reportDir: 'playwright-report',
 									reportFiles: 'index.html',
-									reportName: 'HTML Report',
+									reportName: 'Playwright Local Report',
 									reportTitles: '',
 									useWrapperFileDirectly: true
 								])
@@ -115,8 +116,39 @@ pipeline {
                 '''
             }
         }
+        stage('Pro E2E') {
+                agent {
+                    docker {
+                        image 'mcr.microsoft.com/playwright:v1.58.2-noble'
+                        reuseNode true
+                    }
+                }
+                environment {
+                    CI_ENVIRONMENT_URL='https://snazzy-alfajores-8d226b.netlify.app'
+        }
+                
+
+                steps {
+                    sh '''
+                        npx playwright test --reporter=html
+                    '''
+                }
+                post {
+                    always {
+                            publishHTML([
+                                allowMissing: false,
+                                alwaysLinkToLastBuild: false,
+                                icon: '',
+                                keepAll: false,
+                                reportDir: 'playwright-report',
+                                reportFiles: 'index.html',
+                                reportName: 'Playwright E2E',
+                                reportTitles: '',
+                                useWrapperFileDirectly: true
+                            ])
+                        }
+                    }
+            }
+
+        }
     }
-
-
-    
-}
