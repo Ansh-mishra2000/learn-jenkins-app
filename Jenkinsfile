@@ -116,7 +116,41 @@ pipeline {
                 '''
             }
         }
-        stage('Pro E2E') {
+        stage('Deploying staging') {
+                agent {
+                    docker {
+                        image 'mcr.microsoft.com/playwright:v1.58.2-noble'
+                        reuseNode true
+                    }
+                
+
+                steps {
+                    sh '''
+                    npm install netlify-cli
+					node_modules/.bin/netlify --version
+					echo "Deploying to production. Site Id: $NETLIFY_SITE_ID"
+					node_modules/.bin/netlify status
+					node_modules/.bin/netlify deploy --dir=build
+                '''
+                }
+                post {
+                    always {
+                            publishHTML([
+                                allowMissing: false,
+                                alwaysLinkToLastBuild: false,
+                                icon: '',
+                                keepAll: false,
+                                reportDir: 'playwright-report',
+                                reportFiles: 'index.html',
+                                reportName: 'Playwright E2E',
+                                reportTitles: '',
+                                useWrapperFileDirectly: true
+                            ])
+                        }
+                    }
+            }
+
+        stage('Deploy pro E2E') {
                 agent {
                     docker {
                         image 'mcr.microsoft.com/playwright:v1.58.2-noble'
