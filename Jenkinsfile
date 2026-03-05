@@ -133,6 +133,9 @@ pipeline {
 					node_modules/.bin/netlify deploy --dir=build --json > deploy-out.txt
 					node_modules/.bin/node-jq -r '.deploy_url' deploy-out.txt
                 '''
+                script{
+                    env.STAGING_URL=sh(script: "node_modules/.bin/node-jq -r '.deploy_url' deploy-out.txt",returnStdout:true);
+                }
                 }
                 post {
                     always {
@@ -150,13 +153,13 @@ pipeline {
                         }
                     }
             }
-        // stage('Approval') {
-        //     steps {
-        //         input message: 'Approve Production E2E deployment?', ok: 'Deploy'
-        //     }
-        // }
+        stage('Approval') {
+            steps {
+                input message: 'Approve Production E2E deployment?', ok: 'Deploy'
+            }
+        }
 
-        stage('Deploy pro E2E') {
+        stage('Staging E2E') {
                 agent {
                     docker {
                         image 'mcr.microsoft.com/playwright:v1.58.2-noble'
@@ -164,14 +167,14 @@ pipeline {
                     }
                 }
                 environment {
-                    CI_ENVIRONMENT_URL='https://snazzy-alfajores-8d226b.netlify.app'
+                    CI_ENVIRONMENT_URL="$env.STAGING_URL"  //or "${env.STAGING_URL}"
         }
                 
 
-                steps {
-                    timeout(time: 10, unit: 'MINUTES') {
-                        input message: 'Approve running Production E2E tests?', ok: 'Run Tests'
-                }
+                // steps {
+                //     timeout(time: 10, unit: 'MINUTES') {
+                //         input message: 'Approve running Production E2E tests?', ok: 'Run Tests'
+                // }
                     sh '''
                          
                         npx playwright test --reporter=html
@@ -186,7 +189,7 @@ pipeline {
                                 keepAll: false,
                                 reportDir: 'playwright-report',
                                 reportFiles: 'index.html',
-                                reportName: 'Playwright E2E',
+                                reportName: 'Staging E2E',
                                 reportTitles: '',
                                 useWrapperFileDirectly: true
                             ])
@@ -195,4 +198,44 @@ pipeline {
             }
 
         }
-}
+
+
+        stage('Deploy pro E2E') {
+                agent {
+                    docker {
+                        image 'mcr.microsoft.com/playwright:v1.58.2-noble'
+                        reuseNode true
+                    }
+                }
+                environment {
+                    CI_ENVIRONMENT_URL='https://snazzy-alfajores-8d226b.netlify.app'
+        }
+                
+
+                // steps {
+                //     timeout(time: 10, unit: 'MINUTES') {
+                //         input message: 'Approve running Production E2E tests?', ok: 'Run Tests'
+                // }
+                    sh '''
+                         
+                        npx playwright test --reporter=html
+                    '''
+                }
+                post {
+                    always {
+                            publishHTML([
+                                allowMissing: false,
+                                alwaysLinkToLastBuild: false,
+                                icon: '',
+                                keepAll: false,
+                                reportDir: 'playwright-report',
+                                reportFiles: 'index.html',
+                                reportName: 'Production E2E',
+                                reportTitles: '',
+                                useWrapperFileDirectly: true
+                            ])
+                        }
+                    }
+            }
+
+        }
