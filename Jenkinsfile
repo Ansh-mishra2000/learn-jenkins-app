@@ -99,23 +99,7 @@ pipeline {
 
             }
         }
-		stage('Deploy') {
-			agent{
-				docker {
-					image 'node:18'
-					reuseNode true
-				}
-			}
-            steps {
-                sh '''
-                    npm install netlify-cli
-					node_modules/.bin/netlify --version
-					echo "Deploying to production. Site Id: $NETLIFY_SITE_ID"
-					node_modules/.bin/netlify status
-					node_modules/.bin/netlify deploy --dir=build --prod
-                '''
-            }
-        }
+		
         stage('Deploying staging') {
                 agent{
                     docker {
@@ -153,12 +137,7 @@ pipeline {
                         }
                     }
             }
-        stage('Approval') {
-            steps {
-                input message: 'Approve Production E2E deployment?', ok: 'Deploy'
-            }
-        }
-
+        
         stage('Staging E2E') {
                 agent {
                     docker {
@@ -198,6 +177,29 @@ pipeline {
                     }
         }
 
+        stage('Approval') {
+            steps {
+                input message: 'Approve Production E2E deployment?', ok: 'Deploy'
+            }
+        }
+
+        stage('Deploy prod') {
+                agent{
+                    docker {
+                        image 'node:18'
+                        reuseNode true
+                    }
+                }
+                steps {
+                    sh '''
+                        npm install netlify-cli
+                        node_modules/.bin/netlify --version
+                        echo "Deploying to production. Site Id: $NETLIFY_SITE_ID"
+                        node_modules/.bin/netlify status
+                        node_modules/.bin/netlify deploy --dir=build --prod
+                    '''
+                }
+            }
 
         stage('Deploy pro E2E') {
                 agent {
@@ -208,7 +210,7 @@ pipeline {
                 }
                 environment {
                     CI_ENVIRONMENT_URL='https://snazzy-alfajores-8d226b.netlify.app'
-        }
+                }
                 
 
                 steps {
