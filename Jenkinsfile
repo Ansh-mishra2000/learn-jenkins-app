@@ -100,45 +100,9 @@ pipeline {
             }
         }
 		
-        stage('Deploying staging') {
-                agent{
-                    docker {
-                        image 'mcr.microsoft.com/playwright:v1.58.2-noble'
-                        reuseNode true
-                    }
-                }
-
-                steps {
-                    sh '''
-                    npm install netlify-cli node-jq
-					node_modules/.bin/netlify --version
-					echo "Deploying to production. Site Id: $NETLIFY_SITE_ID"
-					node_modules/.bin/netlify status
-					node_modules/.bin/netlify deploy --dir=build --json > deploy-out.txt
-					node_modules/.bin/node-jq -r '.deploy_url' deploy-out.txt
-                '''
-                script{
-                    env.STAGING_URL=sh(script: "node_modules/.bin/node-jq -r '.deploy_url' deploy-out.txt",returnStdout:true);
-                }
-                }
-                post {
-                    always {
-                            publishHTML([
-                                allowMissing: false,
-                                alwaysLinkToLastBuild: false,
-                                icon: '',
-                                keepAll: false,
-                                reportDir: 'playwright-report',
-                                reportFiles: 'index.html',
-                                reportName: 'Playwright E2E',
-                                reportTitles: '',
-                                useWrapperFileDirectly: true
-                            ])
-                        }
-                    }
-            }
+       
         
-        stage('Staging E2E') {
+        stage('Deploy Staging (including E2E) ') {
                 agent {
                     docker {
                         image 'mcr.microsoft.com/playwright:v1.58.2-noble'
@@ -146,9 +110,7 @@ pipeline {
                     }
                 }
 
-                environment {
-                    CI_ENVIRONMENT_URL="$env.STAGING_URL"  //or "${env.STAGING_URL}"
-                }
+                
                 
 
                 steps {
@@ -156,7 +118,13 @@ pipeline {
                 //         input message: 'Approve running Production E2E tests?', ok: 'Run Tests'
                 // }
                     sh '''
-                         
+                        npm install netlify-cli node-jq
+                        node_modules/.bin/netlify --version
+                        echo "Deploying to production. Site Id: $NETLIFY_SITE_ID"
+                        node_modules/.bin/netlify status
+                        node_modules/.bin/netlify deploy --dir=build --json > deploy-out.txt
+                        node_modules/.bin/node-jq -r '.deploy_url' deploy-out.txt
+                        CI_ENVIRONMENT_URL=$(node_modules/.bin/node-jq -r '.deploy_url' deploy-out.txt) 
                         npx playwright test --reporter=html
                     '''
                 }
@@ -223,7 +191,7 @@ pipeline {
                             ])
                         }
                     }
-            }
+                }
 
         }
 }
