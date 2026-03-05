@@ -117,7 +117,7 @@ pipeline {
             }
         }
         stage('Deploying staging') {
-                agent {
+                agent{
                     docker {
                         image 'mcr.microsoft.com/playwright:v1.58.2-noble'
                         reuseNode true
@@ -186,5 +186,4 @@ pipeline {
             }
 
         }
-    }
 }
