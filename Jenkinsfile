@@ -183,25 +183,7 @@ pipeline {
             }
         }
 
-        stage('Deploy prod') {
-                agent{
-                    docker {
-                        image 'node:18'
-                        reuseNode true
-                    }
-                }
-                steps {
-                    sh '''
-                        npm install netlify-cli
-                        node_modules/.bin/netlify --version
-                        echo "Deploying to production. Site Id: $NETLIFY_SITE_ID"
-                        node_modules/.bin/netlify status
-                        node_modules/.bin/netlify deploy --dir=build --prod
-                    '''
-                }
-            }
-
-        stage('Deploy pro E2E') {
+        stage(' Deploy production (including E2E) ') {
                 agent {
                     docker {
                         image 'mcr.microsoft.com/playwright:v1.58.2-noble'
@@ -218,7 +200,11 @@ pipeline {
                 //         input message: 'Approve running Production E2E tests?', ok: 'Run Tests'
                 // }
                     sh '''
-                         
+                        npm install netlify-cli
+                        node_modules/.bin/netlify --version
+                        echo "Deploying to production. Site Id: $NETLIFY_SITE_ID"
+                        node_modules/.bin/netlify status
+                        node_modules/.bin/netlify deploy --dir=build --pro
                         npx playwright test --reporter=html
                     '''
                 }
