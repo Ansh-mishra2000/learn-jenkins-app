@@ -149,11 +149,11 @@ pipeline {
                         }
                     }
             }
-            stage('Approval') {
-                steps {
-                    input message: 'Approve Production E2E deployment?', ok: 'Deploy'
-                }
-            }
+        // stage('Approval') {
+        //     steps {
+        //         input message: 'Approve Production E2E deployment?', ok: 'Deploy'
+        //     }
+        // }
 
         stage('Deploy pro E2E') {
                 agent {
@@ -168,6 +168,9 @@ pipeline {
                 
 
                 steps {
+                    timeout(time: 10, unit: 'MINUTES') {
+                        input message: 'Approve running Production E2E tests?', ok: 'Run Tests'
+                    }
                     sh '''
                          
                         npx playwright test --reporter=html
