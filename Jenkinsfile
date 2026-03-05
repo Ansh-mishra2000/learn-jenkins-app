@@ -110,6 +110,10 @@ pipeline {
                     }
                 }
 
+                environment{
+                    CI_ENVIRONMENT_URL='VALUE WILL BE SET LATER'
+                }
+
                 
                 
 
