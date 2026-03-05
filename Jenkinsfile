@@ -211,7 +211,7 @@ pipeline {
         }
                 
 
-                // steps {
+                steps {
                 //     timeout(time: 10, unit: 'MINUTES') {
                 //         input message: 'Approve running Production E2E tests?', ok: 'Run Tests'
                 // }
@@ -238,3 +238,4 @@ pipeline {
             }
 
         }
+}
