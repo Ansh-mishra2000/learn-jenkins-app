@@ -149,6 +149,11 @@ pipeline {
                         }
                     }
             }
+            stage('Approval') {
+                steps {
+                    input message: 'Approve Production E2E deployment?', ok: 'Deploy'
+                }
+            }
 
         stage('Deploy pro E2E') {
                 agent {
@@ -164,7 +169,7 @@ pipeline {
 
                 steps {
                     sh '''
-                        input message: 'Ready to deploy?', ok: 'Yes, I want to deploy!' 
+                         
                         npx playwright test --reporter=html
                     '''
                 }
