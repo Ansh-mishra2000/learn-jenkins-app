@@ -195,9 +195,6 @@ pipeline {
                             ])
                         }
                     }
-            }
-
-        }
 
 
         stage('Deploy pro E2E') {
