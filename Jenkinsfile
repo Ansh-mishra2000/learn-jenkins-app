@@ -166,12 +166,13 @@ pipeline {
                         reuseNode true
                     }
                 }
+
                 environment {
                     CI_ENVIRONMENT_URL="$env.STAGING_URL"  //or "${env.STAGING_URL}"
-        }
+                }
                 
 
-                // steps {
+                steps {
                 //     timeout(time: 10, unit: 'MINUTES') {
                 //         input message: 'Approve running Production E2E tests?', ok: 'Run Tests'
                 // }
@@ -195,6 +196,7 @@ pipeline {
                             ])
                         }
                     }
+        }
 
 
         stage('Deploy pro E2E') {
