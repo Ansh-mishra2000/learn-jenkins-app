@@ -126,11 +126,12 @@ pipeline {
 
                 steps {
                     sh '''
-                    npm install netlify-cli
+                    npm install netlify-cli node-jq
 					node_modules/.bin/netlify --version
 					echo "Deploying to production. Site Id: $NETLIFY_SITE_ID"
 					node_modules/.bin/netlify status
-					node_modules/.bin/netlify deploy --dir=build
+					node_modules/.bin/netlify deploy --dir=build --json > deploy-out.txt
+					node_modules/.bin/node-jq -r '.deploy_url' deploy-out.txt
                 '''
                 }
                 post {
@@ -170,7 +171,7 @@ pipeline {
                 steps {
                     timeout(time: 10, unit: 'MINUTES') {
                         input message: 'Approve running Production E2E tests?', ok: 'Run Tests'
-                    }
+                }
                     sh '''
                          
                         npx playwright test --reporter=html
